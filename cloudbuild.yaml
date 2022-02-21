@@ -1,0 +1,36 @@
+steps:
+#First Clone from Google Cloud Source Repository  
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: 'gcloud'
+  args: ['source','repos','clone','$_REPO_NAME']
+
+#Build the image 
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build','-t','gcr.io/${_PROJECT}/${_CONTAINERNAME}:${_VERSION}','.']
+
+#Push the image  
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push','gcr.io/${_PROJECT}/${_CONTAINERNAME}:${_VERSION}']
+
+# deploy container image to GKE
+- name: "gcr.io/cloud-builders/gke-deploy"
+  args:
+  - run
+  - --filename=kubernetes/deployment.yaml
+  - --image=gcr.io/${_PROJECT}/${_CONTAINERNAME}:${_VERSION}
+  - --location=${_ZONE}
+  - --cluster=${_GKE_CLUSTER}
+    
+substitutions:
+    #GCP Specific configuration
+    _PROJECT: hcl-demo-342006
+    _ZONE: us-central1-b
+    _GKE_CLUSTER: hcl-cluster
+    
+    #Repository Specific configuration. DevOps can change this settings
+    # _DEPLOYMENTNAME: hello-world-service
+    _CONTAINERNAME: hcl-container   
+    _REPO_NAME: hcl-repo
+    
+    # Developers ONLY change
+    _VERSION: v1.0
