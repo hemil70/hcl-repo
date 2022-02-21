@@ -1,0 +1,40 @@
+---
+apiVersion: "apps/v1"
+kind: "Deployment"
+metadata:
+  name: "hcl-deployment"
+  labels:
+    app: "hcl-deployment"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: "hcl-deployment"
+  template:
+    metadata:
+      labels:
+        app: "hcl-deployment"
+    spec:
+      containers:
+      - name: "hcl-container-sha256-1"
+        image: "gcr.io/hcl-demo-342006/hcl-container@sha256:4325fa7c1100b2aa915bc6446a7fe992c60d3cbcca0dc463cb9b8ad3432f1d06"
+---
+apiVersion: "autoscaling/v2beta1"
+kind: "HorizontalPodAutoscaler"
+metadata:
+  name: "hcl-deployment-hpa-721m"
+  labels:
+    app: "hcl-deployment"
+spec:
+  scaleTargetRef:
+    kind: "Deployment"
+    name: "hcl-deployment"
+    apiVersion: "apps/v1"
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: "Resource"
+    resource:
+      name: "cpu"
+      targetAverageUtilization: 80        
+ 
